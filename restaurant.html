@@ -54,6 +54,44 @@
     <!-- end restaurant -->
     <!-- Beginning reviews -->
     <section tabindex="10" id="reviews-container">
+      <section id="review-form">
+        <h2>Write a review</h2>
+        <form action="/">
+          <div class="row">
+              <div class="col-1">
+                <label for="name">Name</label>
+              </div>
+              <div class="col-2">
+                <input type="text" id="name" name="name" placeholder="Your name..">
+              </div>
+          </div>
+          <div class="row">
+            <div class="col-1">
+              <label for="Rating">Rating</label>
+            </div>
+            <div class="col-3">
+              <select id="rating" name="rating">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-1">
+              <label for="Review">Review</label>
+            </div>
+            <div class="col-2">
+              <textarea id="review" name="review" placeholder="Write review.."></textarea>
+            </div>
+          </div>
+          <div class="row submit">
+            <input type="submit" value="Submit">
+          </div>
+        </form>
+      </section>
       <ul id="reviews-list"></ul>
     </section>
     <!-- End reviews -->

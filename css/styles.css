@@ -306,6 +306,77 @@ nav h1 a {
   color: #666;
 }
 
+/* === review form START === */
+#review-form {
+  border-radius: 5px;
+  padding-right: 8%;
+}
+
+/* Clear floats after the columns */
+#review-form .row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.col-1 {
+  float: left;
+  width: 25%;
+  margin-top: 6px;
+}
+
+.col-2 {
+  float: left;
+  width: 75%;
+  margin-top: 6px;
+}
+
+.col-3 {
+  float: left;
+  width: 15%;
+  margin-top: 6px;
+}
+
+form > .row > .col-1 > label{
+  padding: 12px;
+  display: inline-block;
+  visibility: visible; 
+}
+
+form {
+  padding-top: 20px;
+  background-color: white;
+}
+
+input[type=text], select, textarea {
+  width: 90%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+input[type=submit] {
+  background-color: #4CAF50;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  float: right;
+}
+
+input[type=submit]:hover {
+  background-color: #45a049;
+}
+
+.submit {
+  padding: 20px;
+}
+
+/* === review form END === */
+
+
 /* ============ Media Queries for home page =============== */
 
 @media (max-width: 1000px) {
