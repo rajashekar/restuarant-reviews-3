@@ -376,6 +376,17 @@ input[type=submit]:hover {
 
 /* === review form END === */
 
+/* === Favorite button START === */
+#favorite {
+  font-size: 12pt;
+  cursor: pointer;
+}
+#favmsg {
+  padding-left: 6px;
+}
+
+/* === Favorite button END === */
+
 
 /* ============ Media Queries for home page =============== */
 

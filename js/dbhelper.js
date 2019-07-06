@@ -39,6 +39,17 @@ export default class DBHelper {
   }
 
   /**
+   * update the restuarant in index db
+   * @param {*} restaurant 
+   */
+  static updateRestaurantInDB(restaurant) {
+    return dbPromise.then(function(db){
+      const store = db.transaction('restaurants', 'readwrite').objectStore('restaurants');
+      store.get(restaurant.id).then(idbRestaurant => store.put(restaurant));
+    });
+  }
+
+  /**
    * 
    * @param restaurants
    * Store restuarants in indexDB
@@ -78,6 +89,29 @@ export default class DBHelper {
       };
       xhr.send();
     });
+  }
+
+  /**
+   * 
+   * set favorite
+   */
+
+  static setFavorite(id, fav, callback) {
+    var self = this;
+    let xhr = new XMLHttpRequest();
+    xhr.open('PUT', `${DBHelper.DATABASE_URL}/${id}/?is_favorite=${fav}`);
+    xhr.onload = () => {
+      if(xhr.status === 200) {
+        const restaurant = JSON.parse(xhr.responseText);
+        // store updated restaurant in index db
+        self.updateRestaurantInDB(restaurant);
+        callback(null, restaurant);
+      } else {
+        const error = (`Request failed. Returned status of ${xhr.status}`);
+        callback(error, null);
+      }
+    }
+    xhr.send();
   }
 
   /**

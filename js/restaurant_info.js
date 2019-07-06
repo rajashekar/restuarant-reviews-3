@@ -99,8 +99,42 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
   if (restaurant.operating_hours) {
     fillRestaurantHoursHTML();
   }
+
+  // favorite
+  showFavorite(restaurant.is_favorite);
+  // on click toggle favorite
+
   // fill reviews
   fillReviewsHTML();
+}
+
+const registerFav = () => {
+  const fav = document.getElementById("fav");
+  fav.onclick = function() {
+    const is_fav = document.getElementsByClassName("fa-star");
+    updateFavInDB(is_fav.length ? false : true);
+  }    
+}
+
+const updateFavInDB = (fav) => {
+  const id = getParameterByName('id');
+  DBHelper.setFavorite(id, fav, (error, restaurant) => {
+    self.restaurant = restaurant;
+    if (!restaurant) {
+      console.error(error);
+      return;
+    }
+    fav? showFavorite("true") : showFavorite("false") ;
+  });
+}
+
+const showFavorite = (is_favorite) => {
+  const favorite = document.getElementById('favorite');
+  favorite.innerHTML = is_favorite === "true" ?
+    '<i id="fav" class="fa fa-star"></i><span id="favmsg">Favorited</span>' :
+    '<i id="fav" class="fa fa-star-o"></i><span id="favmsg">Favorite this!</span>'
+
+    registerFav();
 }
 
 /**
