@@ -51,7 +51,6 @@ function bundle(b, outputPath) {
 
 const jsBundles = {
     'js/dbhelper.js': createBundle('./js/dbhelper.js'),
-    'js/dbpromise.js': createBundle('./js/dbpromise.js'),
     'js/main.js': createBundle('./js/main.js'),
     'js/restaurant_info.js': createBundle('./js/restaurant_info.js'),
     'js/sw_register.js': createBundle('./js/sw_register.js'),

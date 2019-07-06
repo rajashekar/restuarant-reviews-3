@@ -32,6 +32,7 @@ const initMap = () => {
       }).addTo(newMap);
       fillBreadcrumb();
       DBHelper.mapMarkerForRestaurant(self.restaurant, newMap);
+      fetchReviewsForRestaurant(restaurant.id);
     }
   });
 }  
@@ -77,6 +78,19 @@ const fetchRestaurantFromURL = (callback) => {
   }
 }
 
+const fetchReviewsForRestaurant = (restaurantId) => {
+  DBHelper.fetchReviewByRestuarantId(restaurantId, (error, reviews) => {
+    self.restaurant.reviews = reviews;
+    if(!reviews) {
+      console.error(error);
+      return;
+    } else {
+      // fill reviews
+      fillReviewsHTML();
+    }
+  });
+}
+
 /**
  * Create restaurant HTML and add it to the webpage
  */
@@ -104,8 +118,6 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
   showFavorite(restaurant.is_favorite);
   // on click toggle favorite
 
-  // fill reviews
-  fillReviewsHTML();
 }
 
 const registerFav = () => {
@@ -191,7 +203,7 @@ const createReviewHTML = (review, tabindex) => {
   li.appendChild(name);
 
   const date = document.createElement('p');
-  date.innerHTML = review.date;
+  date.innerHTML = new Date(review.updatedAt).toLocaleDateString();;
   li.appendChild(date);
 
   const rating = document.createElement('p');

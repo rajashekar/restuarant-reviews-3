@@ -6,6 +6,8 @@ import idb from 'idb';
 const dbPromise = idb.open('restaurant-reviews-db', 1,function(upgradeDb) {
   const restaurantsStore = upgradeDb.createObjectStore('restaurants', { keyPath: 'id' });
   restaurantsStore.createIndex('id', 'id');
+  const reviewsStore = upgradeDb.createObjectStore('reviews', { keyPath: 'id' });
+  reviewsStore.createIndex('id', 'id');
 });
 
 /**
@@ -22,6 +24,11 @@ export default class DBHelper {
     //return `http://localhost:${port}/data/restaurants.json`;
     const port = 1337; // Change this to your server port
     return `http://localhost:${port}/restaurants`;
+  }
+
+  static get REVIEWS_URL() {
+    const port = 1337; // Change this to your server port
+    return `http://localhost:${port}/reviews`;
   }
 
   /**
@@ -63,12 +70,41 @@ export default class DBHelper {
     });
   }
 
+  static getReviewsFromDB() {
+    return dbPromise.then(function(db){
+      const tx = db.transaction('reviews');
+      const reviewsStore = tx.objectStore('reviews');
+      const idIndex = reviewsStore.index('id');
+      return idIndex.getAll();
+    });
+  }
+
+  static updateReviewInDB(review, newReview) {
+    return dbPromise.then(function(db){
+      const store = db.transaction('reviews', 'readwrite').objectStore('reviews');
+      newReview ? 
+        store.put(review) : 
+        store.get(review.id).then(review => store.put(review));
+    });
+  }
+
+  static storeReviewsInDB(reviews) {
+    dbPromise.then(function(db){
+      const tx = db.transaction('reviews','readwrite');
+      const reviewsStore = tx.objectStore('reviews');
+      reviews.forEach(review => reviewsStore.put(review));
+      return tx.complete;
+    });
+  }
+
   /**
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-    // if restaurants exists in db 
     var self = this;
+
+    // if restaurants exists in db 
+    // get restaurants
     this.getRestaurantsFromDB().then(function(restaurants){
       if(restaurants && restaurants.length > 0) {
         callback(null, restaurants);
@@ -84,6 +120,33 @@ export default class DBHelper {
           callback(null, restaurants);
         } else { // Oops!. Got an error from server.
           const error = (`Request failed. Returned status of ${xhr.status}`);
+          callback(error, null);
+        }
+      };
+      xhr.send();
+    });
+
+  }
+
+  /**
+   * Fetch all reviews.
+   */
+  static fetchReviews(callback) {
+    var self = this;
+    this.getReviewsFromDB().then(function(reviews){
+      if(reviews && reviews.length > 0) {
+        callback(null, reviews);
+        return;
+      }
+      let xhr = new XMLHttpRequest();
+      xhr.open('GET', DBHelper.REVIEWS_URL);
+      xhr.onload = () => {
+        if(xhr.status === 200) {
+          const reviews = JSON.parse(xhr.responseText);
+          self.storeReviewsInDB(reviews);
+          callback(null, reviews);
+        } else {
+          const err = (`Request failed. Returned status of ${xhr.status}`);
           callback(error, null);
         }
       };
@@ -128,6 +191,24 @@ export default class DBHelper {
           callback(null, restaurant);
         } else { // Restaurant does not exist in the database
           callback('Restaurant does not exist', null);
+        }
+      }
+    });
+  }
+
+  /**
+   * Fetch review for given restuarant
+   */
+  static fetchReviewByRestuarantId(id, callback) {
+    DBHelper.fetchAllReviews((error, allreviews) => {
+      if (error) {
+        callback(error, null);
+      } else {
+        const reviews = allreviews.filter(r => r.restaurant_id === id);
+        if (reviews) {
+          callback(null, reviews);
+        } else {
+          callback('Reviews for this restuarant does not exist', null);
         }
       }
     });
@@ -201,6 +282,20 @@ export default class DBHelper {
         const uniqueNeighborhoods = neighborhoods.filter((v, i) => neighborhoods.indexOf(v) == i)
         callback(null, uniqueNeighborhoods);
       }
+    });
+  }
+
+  /**
+   * Fetch all reviews
+   */
+  static fetchAllReviews(callback) {
+    // Fetch all reviews
+    DBHelper.fetchReviews((error, reviews) => {
+      if (error) {
+        callback(error, null);
+      } else {
+        callback(null, reviews);
+      } 
     });
   }
 

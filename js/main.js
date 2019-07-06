@@ -1,6 +1,7 @@
 import DBHelper from "./dbhelper";
 let restaurants,
   neighborhoods,
+  reviews,
   cuisines
 let newMap
 let markers = []
@@ -13,6 +14,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
   initMap(); // added 
   fetchNeighborhoods();
   fetchCuisines();
+  fetchReviews();
 });
 
 /**
@@ -25,6 +27,20 @@ const fetchNeighborhoods = () => {
     } else {
       self.neighborhoods = neighborhoods;
       fillNeighborhoodsHTML();
+    }
+  });
+}
+
+/**
+ * Fetch all reviews 
+ */
+const fetchReviews = () => {
+  DBHelper.fetchAllReviews((error, reviews) => {
+    if (error) {
+      console.log(error);
+    } else {
+      self.reviews = reviews;
+      console.log(reviews);
     }
   });
 }
