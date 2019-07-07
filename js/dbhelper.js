@@ -56,6 +56,13 @@ export default class DBHelper {
     });
   }
 
+  static addReviewInDB(review) {
+    return dbPromise.then(function(db){
+      const store = db.transaction('reviews', 'readwrite').objectStore('reviews');
+      store.put(review);
+    });
+  }
+
   /**
    * 
    * @param restaurants
@@ -175,6 +182,26 @@ export default class DBHelper {
       }
     }
     xhr.send();
+  }
+
+  static postReview(review, callback) {
+    var self = this;
+    let xhr = new XMLHttpRequest();
+    xhr.open('POST', DBHelper.REVIEWS_URL);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onload = () => {
+      if(xhr.status === 201) {
+        const rev_res = JSON.parse(xhr.responseText);
+        rev_res.createdAt = new Date(rev_res.createdAt).getTime();
+        rev_res.updatedAt = new Date(rev_res.updatedAt).getTime()
+        self.addReviewInDB(rev_res);
+        callback(null, rev_res);
+      } else {
+        const error = (`Request failed. Returned status of ${xhr.status}`);
+        callback(error, null);
+      }
+    }
+    xhr.send(JSON.stringify(review));
   }
 
   /**

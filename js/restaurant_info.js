@@ -1,6 +1,7 @@
 import DBHelper from "./dbhelper";
 let restaurant;
 let newMap;
+let tabindex = 11;
 
 /**
  * Initialize map as soon as the page is loaded.
@@ -63,7 +64,7 @@ const fetchRestaurantFromURL = (callback) => {
   }
   const id = getParameterByName('id');
   if (!id) { // no id found in URL
-    error = 'No restaurant id in URL'
+    const error = 'No restaurant id in URL'
     callback(error, null);
   } else {
     DBHelper.fetchRestaurantById(id, (error, restaurant) => {
@@ -116,8 +117,54 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
 
   // favorite
   showFavorite(restaurant.is_favorite);
-  // on click toggle favorite
 
+  // review form
+  processForm();
+
+}
+
+const processForm = () => {
+  const reviewForm = document.getElementById('add-review');
+  reviewForm.onsubmit = function(e) {
+      console.log(e);
+      if (e.preventDefault) e.preventDefault();
+      // get form data
+      const reviewObj = {
+        "restaurant_id": self.restaurant.id,
+        "name": e.target.name.value,
+        "rating": parseInt(e.target.rating.value),
+        "comments": e.target.comment.value
+      }
+      // make call and save to db
+      storeReviewInDB(reviewObj);
+      // clear form
+      clearForm(e);
+      return false;
+  }
+}
+
+const storeReviewInDB = (review) => {
+  DBHelper.postReview(review, (error, res) => {
+     self.restaurant.reviews = [...self.restaurant.reviews, res];
+      // add to dom 
+      const ul = document.getElementById('reviews-list');
+      tabindex++;
+      ul.appendChild(createReviewHTML(res, tabindex));
+  });
+}
+
+const clearForm = (e) => {
+  e.target.name.value = "";
+  e.target.comment.value = "";
+  e.target.rating.value = 1;
+}
+
+const showFavorite = (is_favorite) => {
+  const favorite = document.getElementById('favorite');
+  favorite.innerHTML = is_favorite === "true" ?
+    '<i id="fav" class="fa fa-star"></i><span id="favmsg">Favorited</span>' :
+    '<i id="fav" class="fa fa-star-o"></i><span id="favmsg">Favorite this!</span>'
+    registerFav();
 }
 
 const registerFav = () => {
@@ -138,15 +185,6 @@ const updateFavInDB = (fav) => {
     }
     fav? showFavorite("true") : showFavorite("false") ;
   });
-}
-
-const showFavorite = (is_favorite) => {
-  const favorite = document.getElementById('favorite');
-  favorite.innerHTML = is_favorite === "true" ?
-    '<i id="fav" class="fa fa-star"></i><span id="favmsg">Favorited</span>' :
-    '<i id="fav" class="fa fa-star-o"></i><span id="favmsg">Favorite this!</span>'
-
-    registerFav();
 }
 
 /**
@@ -184,7 +222,6 @@ const fillReviewsHTML = (reviews = self.restaurant.reviews) => {
     container.appendChild(noReviews);
     return;
   }
-  let tabindex = 11;
   const ul = document.getElementById('reviews-list');
   reviews.forEach(review => {
     ul.appendChild(createReviewHTML(review, tabindex));
