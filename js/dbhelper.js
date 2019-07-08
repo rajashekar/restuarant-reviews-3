@@ -213,6 +213,12 @@ export default class DBHelper {
     xhr.send();
   }
 
+  /**
+   * edit review
+   * @param {*} id 
+   * @param {*} review 
+   * @param {*} callback 
+   */
   static editReview(id, review, callback) {
     var self = this;
     let xhr = new XMLHttpRequest();

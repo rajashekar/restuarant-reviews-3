@@ -261,6 +261,7 @@ const processEditForm = (reviewid) => {
     }
     // make call and save to db
     DBHelper.editReview(reviewid, reviewObj, (error, review) => {
+      self.restaurant.reviews = self.restaurant.reviews.map(r => r.id === review.id ? review : r);
       // update the review in UI.
       li.children[0].children[0].children[0].textContent = review.name;
       li.children[0].children[1].textContent = new Date(review.updatedAt).toLocaleDateString();
