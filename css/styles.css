@@ -374,6 +374,11 @@ input[type=submit]:hover {
   padding: 20px;
 }
 
+.edit-review, .delete-review {
+  padding-left: 5px;
+  cursor: pointer;
+}
+
 /* === review form END === */
 
 /* === Favorite button START === */
@@ -384,7 +389,6 @@ input[type=submit]:hover {
 #favmsg {
   padding-left: 6px;
 }
-
 /* === Favorite button END === */
 
 

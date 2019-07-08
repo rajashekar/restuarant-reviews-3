@@ -230,13 +230,51 @@ const fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   container.appendChild(ul);
 }
 
+
+const deleteReview = (reviewid) => {
+  // delete review id
+  DBHelper.deleteReview(reviewid, (error, review) => {
+    // remove the review from restaurants array.
+    self.restaurant.reviews = self.restaurant.reviews.filter(r => r.id !== review.id);
+    // remove the review from UI. 
+    const li = document.getElementById(`review-${review.id}`);
+    li.remove();
+  });
+}
+
+const editReview = (reviewid) => {
+  DBHelper.editReview(reviewid, (error, review) => {
+    // update the review in UI.
+  });
+}
+
 /**
  * Create review HTML and add it to the webpage.
  */
 const createReviewHTML = (review, tabindex) => {
   const li = document.createElement('li');
+  li.id = `review-${review.id}`;
   const name = document.createElement('p');
   name.innerHTML = review.name;
+
+  const edit = document.createElement('a');
+  edit.className = "edit-review";
+  edit.id = review.id;
+  edit.innerHTML = "edit";
+  edit.onclick = function(e) {
+    editReview(parseInt(e.target.id));
+  }
+  name.appendChild(edit);
+
+  const del = document.createElement('a');
+  del.className = "delete-review"
+  del.id = review.id;
+  del.innerHTML = "delete";
+  del.onclick = function(e) {
+    deleteReview(parseInt(e.target.id));
+  }
+  name.appendChild(del);
+
   li.appendChild(name);
 
   const date = document.createElement('p');

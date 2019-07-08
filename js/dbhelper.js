@@ -63,6 +63,13 @@ export default class DBHelper {
     });
   }
 
+  static removeReviewInDB(review) {
+    return dbPromise.then(function(db){
+      const store = db.transaction('reviews', 'readwrite').objectStore('reviews');
+      store.delete(review.id);
+    });
+  }
+
   /**
    * 
    * @param restaurants
@@ -176,6 +183,23 @@ export default class DBHelper {
         // store updated restaurant in index db
         self.updateRestaurantInDB(restaurant);
         callback(null, restaurant);
+      } else {
+        const error = (`Request failed. Returned status of ${xhr.status}`);
+        callback(error, null);
+      }
+    }
+    xhr.send();
+  }
+
+  static deleteReview(reviewid, callback) {
+    var self = this;
+    let xhr = new XMLHttpRequest();
+    xhr.open('DELETE', `${DBHelper.REVIEWS_URL}/${reviewid}`);
+    xhr.onload = () => {
+      if(xhr.status === 200) {
+        const rev_res = JSON.parse(xhr.responseText);
+        self.removeReviewInDB(rev_res);
+        callback(null, rev_res);
       } else {
         const error = (`Request failed. Returned status of ${xhr.status}`);
         callback(error, null);
