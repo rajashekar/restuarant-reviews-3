@@ -379,6 +379,10 @@ input[type=submit]:hover {
   cursor: pointer;
 }
 
+#edit-review-form {
+  display: none;
+}
+
 /* === review form END === */
 
 /* === Favorite button START === */

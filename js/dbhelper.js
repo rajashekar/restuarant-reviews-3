@@ -191,6 +191,11 @@ export default class DBHelper {
     xhr.send();
   }
 
+  /**
+   * delete review
+   * @param {*} reviewid 
+   * @param {*} callback 
+   */
   static deleteReview(reviewid, callback) {
     var self = this;
     let xhr = new XMLHttpRequest();
@@ -208,6 +213,31 @@ export default class DBHelper {
     xhr.send();
   }
 
+  static editReview(id, review, callback) {
+    var self = this;
+    let xhr = new XMLHttpRequest();
+    xhr.open('PUT', `${DBHelper.REVIEWS_URL}/${id}`);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onload = () => {
+      if(xhr.status === 200) {
+        const rev_res = JSON.parse(xhr.responseText);
+        rev_res.createdAt = new Date(rev_res.createdAt).getTime();
+        rev_res.updatedAt = new Date(rev_res.updatedAt).getTime()
+        self.addReviewInDB(rev_res);
+        callback(null, rev_res);
+      } else {
+        const error = (`Request failed. Returned status of ${xhr.status}`);
+        callback(error, null);
+      }
+    }
+    xhr.send(JSON.stringify(review));
+  }
+
+  /**
+   * Adding review
+   * @param {*} review 
+   * @param {*} callback 
+   */
   static postReview(review, callback) {
     var self = this;
     let xhr = new XMLHttpRequest();

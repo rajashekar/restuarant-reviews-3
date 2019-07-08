@@ -96,6 +96,41 @@
       </section>
       <ul id="reviews-list"></ul>
     </section>
+    <form id="edit-review-form" action="#">
+        <div class="row">
+            <div class="col-1">
+              <label for="name">Name</label>
+            </div>
+            <div class="col-2">
+              <input type="text" id="name" name="name" placeholder="Your name..">
+            </div>
+        </div>
+        <div class="row">
+          <div class="col-1">
+            <label for="Rating">Rating</label>
+          </div>
+          <div class="col-3">
+            <select id="rating" name="rating">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-1">
+            <label for="Review">Comment</label>
+          </div>
+          <div class="col-2">
+            <textarea id="comment" name="comment" placeholder="Write review.."></textarea>
+          </div>
+        </div>
+        <div class="row submit">
+          <input type="submit" value="Edit">
+        </div>
+      </form>
     <!-- End reviews -->
   </main>
   <!-- End main -->

@@ -114,13 +114,10 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
   if (restaurant.operating_hours) {
     fillRestaurantHoursHTML();
   }
-
   // favorite
   showFavorite(restaurant.is_favorite);
-
   // review form
   processForm();
-
 }
 
 const processForm = () => {
@@ -242,10 +239,40 @@ const deleteReview = (reviewid) => {
   });
 }
 
-const editReview = (reviewid) => {
-  DBHelper.editReview(reviewid, (error, review) => {
-    // update the review in UI.
-  });
+const processEditForm = (reviewid) => {
+  const review = self.restaurant.reviews.find(r => r.id === reviewid);
+  const li = document.getElementById(`review-${reviewid}`);
+  const editform = document.getElementById('edit-review-form').cloneNode(true);
+
+  li.children[0].style='display:none';
+  editform.style = 'display:grid';
+  li.appendChild(editform);
+  editform.children[0].children[1].children[0].value = review.name;
+  editform.children[1].children[1].children[0].value = review.rating;
+  editform.children[2].children[1].children[0].value = review.comments;
+  editform.onsubmit = function(e) {
+    console.log(e);
+    if (e.preventDefault) e.preventDefault();
+    // get form data
+    const reviewObj = {
+      "name": e.target.name.value,
+      "rating": parseInt(e.target.rating.value),
+      "comments": e.target.comment.value
+    }
+    // make call and save to db
+    DBHelper.editReview(reviewid, reviewObj, (error, review) => {
+      // update the review in UI.
+      li.children[0].children[0].children[0].textContent = review.name;
+      li.children[0].children[1].textContent = new Date(review.updatedAt).toLocaleDateString();
+      li.children[0].children[2].textContent = `Rating: ${review.rating}`;
+      li.children[0].children[3].textContent = review.comments;
+      // delete form
+      editform.remove();
+      li.children[0].style='display:show'; 
+    });
+
+    return false;
+  }
 }
 
 /**
@@ -254,15 +281,22 @@ const editReview = (reviewid) => {
 const createReviewHTML = (review, tabindex) => {
   const li = document.createElement('li');
   li.id = `review-${review.id}`;
+
+  const rev_div = document.createElement('div');
+  rev_div.id = `read-review-${review.id}`
+
   const name = document.createElement('p');
-  name.innerHTML = review.name;
+  const rev_span = document.createElement('span');
+  rev_span.innerHTML = review.name;
+
+  name.appendChild(rev_span);
 
   const edit = document.createElement('a');
   edit.className = "edit-review";
   edit.id = review.id;
   edit.innerHTML = "edit";
   edit.onclick = function(e) {
-    editReview(parseInt(e.target.id));
+    processEditForm(parseInt(e.target.id));
   }
   name.appendChild(edit);
 
@@ -275,21 +309,23 @@ const createReviewHTML = (review, tabindex) => {
   }
   name.appendChild(del);
 
-  li.appendChild(name);
+  rev_div.appendChild(name);
 
   const date = document.createElement('p');
-  date.innerHTML = new Date(review.updatedAt).toLocaleDateString();;
-  li.appendChild(date);
+  date.innerHTML = new Date(review.updatedAt).toLocaleDateString();
+  rev_div.appendChild(date);
 
   const rating = document.createElement('p');
   rating.innerHTML = `Rating: ${review.rating}`;
-  li.appendChild(rating);
+  rev_div.appendChild(rating);
 
   const comments = document.createElement('p');
   comments.innerHTML = review.comments;
   li.setAttribute('tabindex', tabindex.toString());
-  li.appendChild(comments);
+  rev_div.appendChild(comments);
 
+  li.appendChild(rev_div);
+  
   return li;
 }
 
