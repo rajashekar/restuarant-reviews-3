@@ -294,7 +294,7 @@ const createReviewHTML = (review, tabindex) => {
 
   const edit = document.createElement('a');
   edit.className = "edit-review";
-  edit.id = review.id;
+  edit.id = `edit-review-${review.id}`;
   edit.innerHTML = "edit";
   edit.onclick = function(e) {
     processEditForm(parseInt(e.target.id));

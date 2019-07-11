@@ -1,9 +1,17 @@
 @charset "utf-8";
 /* CSS Document */
 
-body,td,th,p{
+@font-face {
+  font-family: 'Font-Awesome';
+  src: url('form/font-awesome-4.5.0/fonts/fontawesome-webfont.woff2') format("woff2"),
+  url('form/font-awesome-4.5.0/fonts/fontawesome-webfont.woff') format('woff'), 
+  url('form/font-awesome-4.5.0/fonts/fontawesome-webfont.ttf') format('truetype');
+  }
+
+body,td,th,p,a,input,h2{
 	font-family: Arial, Helvetica, sans-serif;
-	font-size: 10pt;
+  font-size: 10pt;
+  font-display: auto;
 	color: #333;
 	line-height: 1.5;
 }
@@ -17,7 +25,8 @@ body {
 }
 ul, li {
 	font-family: Arial, Helvetica, sans-serif;
-	font-size: 10pt;
+  font-size: 10pt;
+  font-display: auto;
 	color: #333;
 }
 a {
@@ -33,6 +42,7 @@ a img{
 }
 h1, h2, h3, h4, h5, h6 {
   font-family: Arial, Helvetica, sans-serif;
+  font-display: auto;
   margin: 0 0 20px;
 }
 article, aside, canvas, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
@@ -171,6 +181,7 @@ nav h1 a {
   background-color: #fff;
   border: 2px solid #ccc;
   font-family: Arial,sans-serif;
+  font-display: auto;
   min-height: 380px;
   padding: 25px 30px 25px;
   text-align: left;
@@ -190,6 +201,7 @@ nav h1 a {
 #restaurants-list li h1 {
   color: #f18200;
   font-family: Arial,sans-serif;
+  font-display: auto;
   font-size: 14pt;
   font-weight: 200;
   letter-spacing: 0;

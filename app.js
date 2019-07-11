@@ -6,7 +6,7 @@ const app = express()
 const port = 8010
 
 const staticOptions = {
-    maxAge: 0
+  maxage: '365d',
   };
 
 app.get('/', function(req, res) {
