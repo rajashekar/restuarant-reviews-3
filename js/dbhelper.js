@@ -8,6 +8,8 @@ const dbPromise = idb.open('restaurant-reviews-db', 1,function(upgradeDb) {
   restaurantsStore.createIndex('id', 'id');
   const reviewsStore = upgradeDb.createObjectStore('reviews', { keyPath: 'id' });
   reviewsStore.createIndex('id', 'id');
+  const offlineStore = upgradeDb.createObjectStore('offlinestore', { keyPath: 'id' });
+  offlineStore.createIndex('id', 'id');
 });
 
 /**
@@ -56,20 +58,6 @@ export default class DBHelper {
     });
   }
 
-  static addReviewInDB(review) {
-    return dbPromise.then(function(db){
-      const store = db.transaction('reviews', 'readwrite').objectStore('reviews');
-      store.put(review);
-    });
-  }
-
-  static removeReviewInDB(review) {
-    return dbPromise.then(function(db){
-      const store = db.transaction('reviews', 'readwrite').objectStore('reviews');
-      store.delete(review.id);
-    });
-  }
-
   /**
    * 
    * @param restaurants
@@ -81,6 +69,20 @@ export default class DBHelper {
       const restaurantsStore = tx.objectStore('restaurants');
       restaurants.forEach(restuarant => restaurantsStore.put(restuarant));
       return tx.complete;
+    });
+  }
+
+  static addReviewInDB(review) {
+    return dbPromise.then(function(db){
+      const store = db.transaction('reviews', 'readwrite').objectStore('reviews');
+      store.put(review);
+    });
+  }
+
+  static removeReviewInDB(review) {
+    return dbPromise.then(function(db){
+      const store = db.transaction('reviews', 'readwrite').objectStore('reviews');
+      store.delete(review.id);
     });
   }
 
@@ -108,6 +110,50 @@ export default class DBHelper {
       const reviewsStore = tx.objectStore('reviews');
       reviews.forEach(review => reviewsStore.put(review));
       return tx.complete;
+    });
+  }
+
+  static getOfflineCalls() {
+    return dbPromise.then(function(db){
+      const tx = db.transaction('offlinestore');
+      const offlineStore = tx.objectStore('offlinestore');
+      const idIndex = offlineStore.index('id');
+      return idIndex.getAll();
+    });
+  }
+
+  static removeOfflineCall(id) {
+    return dbPromise.then(function(db){
+      const store = db.transaction('offlinestore', 'readwrite').objectStore('offlinestore');
+      store.delete(id);
+    });
+  }
+
+  static processOfflineCalls() {
+    var self = this;
+    console.log("processing offline calls");
+    this.getOfflineCalls().then(function(offlineCalls){
+      if(offlineCalls && offlineCalls.length) {
+        offlineCalls.forEach(offlineCall => {
+          // if it is a set favorite call
+          console.log(offlineCall.id);
+          if(offlineCall.id.indexOf('setfav') >= 0) {
+            self.setFavorite(offlineCall.payload.id, 
+              offlineCall.payload.fav, 
+              () => self.removeOfflineCall(offlineCall.id));
+          } else if(offlineCall.id.indexOf('addreview') >= 0) {
+            self.postReview(offlineCall.payload.review, 
+              () => self.removeOfflineCall(offlineCall.id));
+          } else if(offlineCall.id.indexOf('editreview') >= 0) {
+            self.editReview(offlineCall.payload.id,
+              offlineCall.payload.review,
+              () => self.removeOfflineCall(offlineCall.id));
+          } else if(offlineCall.id.indexOf('deletereview') >= 0) {
+            self.deleteReview(offlineCall.payload.reviewid, 
+              () => self.removeOfflineCall(offlineCall.id));
+          }
+        });
+      } 
     });
   }
 
@@ -168,6 +214,16 @@ export default class DBHelper {
     });
   }
 
+  static storeCallInDB(id, payload) {
+    const req = {id, payload};
+    dbPromise.then(function(db){
+      const tx = db.transaction('offlinestore','readwrite');
+      const reviewsStore = tx.objectStore('offlinestore');
+      reviewsStore.put(req);
+      return tx.complete;
+    });
+  }
+
   /**
    * 
    * set favorite
@@ -175,20 +231,26 @@ export default class DBHelper {
 
   static setFavorite(id, fav, callback) {
     var self = this;
-    let xhr = new XMLHttpRequest();
-    xhr.open('PUT', `${DBHelper.DATABASE_URL}/${id}/?is_favorite=${fav}`);
-    xhr.onload = () => {
-      if(xhr.status === 200) {
-        const restaurant = JSON.parse(xhr.responseText);
-        // store updated restaurant in index db
-        self.updateRestaurantInDB(restaurant);
-        callback(null, restaurant);
-      } else {
-        const error = (`Request failed. Returned status of ${xhr.status}`);
-        callback(error, null);
+    // if offline, store in indexDB to process later
+    if(!navigator.onLine) {
+      self.storeCallInDB(`setfav-${id}`,{id, fav});
+      self.fetchRestaurantById(id, callback);
+    } else {
+      let xhr = new XMLHttpRequest();
+      xhr.open('PUT', `${DBHelper.DATABASE_URL}/${id}/?is_favorite=${fav}`);
+      xhr.onload = () => {
+        if(xhr.status === 200) {
+          const restaurant = JSON.parse(xhr.responseText);
+          // store updated restaurant in index db
+          self.updateRestaurantInDB(restaurant);
+          callback(null, restaurant);
+        } else {
+          const error = (`Request failed. Returned status of ${xhr.status}`);
+          callback(error, null);
+        }
       }
+      xhr.send();
     }
-    xhr.send();
   }
 
   /**
@@ -198,19 +260,24 @@ export default class DBHelper {
    */
   static deleteReview(reviewid, callback) {
     var self = this;
-    let xhr = new XMLHttpRequest();
-    xhr.open('DELETE', `${DBHelper.REVIEWS_URL}/${reviewid}`);
-    xhr.onload = () => {
-      if(xhr.status === 200) {
-        const rev_res = JSON.parse(xhr.responseText);
-        self.removeReviewInDB(rev_res);
-        callback(null, rev_res);
-      } else {
-        const error = (`Request failed. Returned status of ${xhr.status}`);
-        callback(error, null);
+    if(!navigator.onLine) {
+      self.storeCallInDB(`deletereview-${reviewid}`,{reviewid});
+      callback(null, {id: reviewid});
+    } else {
+      let xhr = new XMLHttpRequest();
+      xhr.open('DELETE', `${DBHelper.REVIEWS_URL}/${reviewid}`);
+      xhr.onload = () => {
+        if(xhr.status === 200) {
+          const rev_res = JSON.parse(xhr.responseText);
+          self.removeReviewInDB(rev_res);
+          callback(null, rev_res);
+        } else {
+          const error = (`Request failed. Returned status of ${xhr.status}`);
+          callback(error, null);
+        }
       }
+      xhr.send();
     }
-    xhr.send();
   }
 
   /**
@@ -221,22 +288,29 @@ export default class DBHelper {
    */
   static editReview(id, review, callback) {
     var self = this;
-    let xhr = new XMLHttpRequest();
-    xhr.open('PUT', `${DBHelper.REVIEWS_URL}/${id}`);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.onload = () => {
-      if(xhr.status === 200) {
-        const rev_res = JSON.parse(xhr.responseText);
-        rev_res.createdAt = new Date(rev_res.createdAt).getTime();
-        rev_res.updatedAt = new Date(rev_res.updatedAt).getTime()
-        self.addReviewInDB(rev_res);
-        callback(null, rev_res);
-      } else {
-        const error = (`Request failed. Returned status of ${xhr.status}`);
-        callback(error, null);
+    if(!navigator.onLine) {
+      self.storeCallInDB(`editreview-${id}`,{id, review});
+      review.id = id;
+      review.updatedAt = new Date().getTime();
+      callback(null, review);
+    }  else {
+      let xhr = new XMLHttpRequest();
+      xhr.open('PUT', `${DBHelper.REVIEWS_URL}/${id}`);
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.onload = () => {
+        if(xhr.status === 200) {
+          const rev_res = JSON.parse(xhr.responseText);
+          rev_res.createdAt = new Date(rev_res.createdAt).getTime();
+          rev_res.updatedAt = new Date(rev_res.updatedAt).getTime()
+          self.addReviewInDB(rev_res);
+          callback(null, rev_res);
+        } else {
+          const error = (`Request failed. Returned status of ${xhr.status}`);
+          callback(error, null);
+        }
       }
+      xhr.send(JSON.stringify(review));
     }
-    xhr.send(JSON.stringify(review));
   }
 
   /**
@@ -246,22 +320,33 @@ export default class DBHelper {
    */
   static postReview(review, callback) {
     var self = this;
-    let xhr = new XMLHttpRequest();
-    xhr.open('POST', DBHelper.REVIEWS_URL);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.onload = () => {
-      if(xhr.status === 201) {
-        const rev_res = JSON.parse(xhr.responseText);
-        rev_res.createdAt = new Date(rev_res.createdAt).getTime();
-        rev_res.updatedAt = new Date(rev_res.updatedAt).getTime()
-        self.addReviewInDB(rev_res);
-        callback(null, rev_res);
-      } else {
-        const error = (`Request failed. Returned status of ${xhr.status}`);
-        callback(error, null);
+    // if offline, store in indexDB to process later
+    if(!navigator.onLine) {
+      self.storeCallInDB(`addreview-${new Date().getTime()}`,{review});
+      self.getReviewsFromDB().then(reviews => {
+        review.createdAt = new Date().getTime();
+        review.updatedAt = new Date().getTime();
+        review.id = reviews.length;
+        callback(null, review);
+      });
+    } else {
+      let xhr = new XMLHttpRequest();
+      xhr.open('POST', DBHelper.REVIEWS_URL);
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.onload = () => {
+        if(xhr.status === 201) {
+          const rev_res = JSON.parse(xhr.responseText);
+          rev_res.createdAt = new Date(rev_res.createdAt).getTime();
+          rev_res.updatedAt = new Date(rev_res.updatedAt).getTime();
+          self.addReviewInDB(rev_res);
+          callback(null, rev_res);
+        } else {
+          const error = (`Request failed. Returned status of ${xhr.status}`);
+          callback(error, null);
+        }
       }
+      xhr.send(JSON.stringify(review));
     }
-    xhr.send(JSON.stringify(review));
   }
 
   /**

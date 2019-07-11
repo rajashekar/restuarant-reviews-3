@@ -1,4 +1,5 @@
-const staticCacheName = 'restaurant-review-static-v1';
+import DBHelper from "./js/dbhelper";
+const staticCacheName = 'restaurant-review-static-v2';
 
 const urlsToCache = [
     '/',
@@ -33,7 +34,8 @@ const urlsToCache = [
     'https://unpkg.com/leaflet@1.3.1/dist/leaflet.js',
     'https://unpkg.com/leaflet@1.3.1/dist/images/marker-icon.png',
     'https://unpkg.com/leaflet@1.3.1/dist/images/marker-icon-2x.png',
-    'https://unpkg.com/leaflet@1.3.1/dist/images/marker-shadow.png'
+    'https://unpkg.com/leaflet@1.3.1/dist/images/marker-shadow.png',
+    'https://kit.fontawesome.com/750687fccf.js'
 ];
 
 // install cache
@@ -84,7 +86,17 @@ self.addEventListener('fetch', function(event){
                       });
                     return response;  
                 }
-            );
+            ).catch(function() {
+                console.log("fetch failed.");
+            });
         })
     );
+});
+
+// process background sync
+self.addEventListener('sync', event => {
+    if(event.tag === 'backgroundSync') {
+        console.log("doing background sync");
+        DBHelper.processOfflineCalls();
+    }
 });
