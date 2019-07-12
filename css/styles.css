@@ -422,14 +422,14 @@ input[type=submit]:hover {
   }
 }
 
-@media (max-height: 900px) {
+@media (max-width: 1000px) and (max-height: 900px) {
   #filter-container {
     top: 45%;  
     width: 100%;
   }
 }
 
-@media (max-height: 850px) {
+@media (max-width: 1000px) and (max-height: 850px) {
   #filter-container {
     top: 43%;  
     width: 100%;
@@ -452,19 +452,19 @@ input[type=submit]:hover {
   }
 }
 
-@media (max-height: 750px) {
+@media (max-width: 1000px) and (max-height: 750px) {
   #filter-container {
     top: 44%;  
   }
 }
 
-@media (max-height: 680px) {
+@media (max-width: 1000px) and (max-height: 680px) {
   #filter-container {
     top: 45%;  
   }
 }
 
-@media (max-height: 600px) {
+@media (max-width: 1000px) and (max-height: 600px) {
   #filter-container {
     top: 46%;  
   }
@@ -525,7 +525,6 @@ input[type=submit]:hover {
     height: 53%;
   }
   #reviews-container {
-    top: 45%;
     height: 53%;
   }
 }
@@ -535,50 +534,35 @@ input[type=submit]:hover {
     top: 11%;
   }
 }
-@media (max-height: 850px) {
+@media (max-width: 1000px) and (max-height: 850px) {
   .inside header, .inside > #footer, .inside #map-container {
-    width: 91%;
+    width: 100%;
   }
   .inside #map-container {
     top: 13%;
   }
-  #restaurant-container {
-    margin-top: 428px;
-  }
 }
 
-@media (max-height: 750px) {
+@media (max-width: 1000px) and (max-height: 750px) {
   .inside #map-container {
     top: 14%;
   }
-  #restaurant-container {
-    margin-top: 395px;
-  }
 }
 
-@media (max-height: 700px) {
+@media (max-width: 1000px) and (max-height: 700px) {
   .inside #map-container {
     top: 15%;
   }
-  #restaurant-container {
-    margin-top: 365px;
-  }
 }
 
-@media (max-height: 650px) {
+@media (max-width: 1000px) and (max-height: 650px) {
   .inside #map-container {
     top: 16%;
   }
-  #restaurant-container {
-    margin-top: 358px;
-  }
 }
 
-@media (max-height: 600px) {
+@media (max-width: 1000px) and (max-height: 600px) {
   .inside #map-container {
     top: 18%;
-  }
-  #restaurant-container {
-    margin-top: 328px;
   }
 }
